@@ -1,7 +1,7 @@
 {
-  "name": "preact-starter-kit",
+  "name": "mazes",
   "version": "1.1.0",
-  "description": "Some boilerplate code to kickstart Preact-based projects.",
+  "description": "Toying around with mazes generation.",
   "main": "index.html",
   "scripts": {
     "build": "webpack --mode production",
@@ -10,27 +10,22 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/beurkinger/preact-starter-kit.git"
+    "url": "git+https://github.com/beurkinger/mazes.git"
   },
   "keywords": [
     "preact",
-    "boilerplate",
     "javascript",
     "typescript",
-    "webpack",
-    "eslint",
-    "prettier",
-    "post-css",
     "html5",
     "css3",
-    "framework"
+    "mazes"
   ],
   "author": "Thibault Goehringer",
   "license": "GPL-3.0",
   "bugs": {
-    "url": "https://github.com/beurkinger/preact-starter-kit/issues"
+    "url": "https://github.com/beurkinger/mazes/issues"
   },
-  "homepage": "https://github.com/beurkinger/preact-starter-kit#readme",
+  "homepage": "https://github.com/beurkinger/mazes#readme",
   "dependencies": {
     "preact": "^10.4.4"
   },

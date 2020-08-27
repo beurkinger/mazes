@@ -51,7 +51,7 @@ module.exports = {
     new Webpack.WatchIgnorePlugin([/css\.d\.ts$/]),
     new HtmlWebpackPlugin({
       template: __dirname + '/src/index.html',
-      title: 'Preact Starter Kit',
+      title: 'Mazes',
     }),
     new MiniCssExtractPlugin(),
   ],
