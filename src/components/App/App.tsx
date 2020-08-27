@@ -1,7 +1,13 @@
 import { h, FunctionComponent } from 'preact';
 
-import './App.css';
+import Maze from '../Maze/Maze';
 
-const App: FunctionComponent = () => <div id="app"></div>;
+import style from './App.css';
+
+const App: FunctionComponent = () => (
+  <div className={style.app}>
+    <Maze />
+  </div>
+);
 
 export default App;
