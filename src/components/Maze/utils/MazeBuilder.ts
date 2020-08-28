@@ -1,6 +1,6 @@
 import { shuffleArray } from './array';
 
-type Cell = {
+export type Cell = {
   id: number;
   walls: {
     north: boolean;
@@ -11,7 +11,7 @@ type Cell = {
   visited: boolean;
 };
 
-type Maze = Cell[][];
+export type Maze = Cell[][];
 
 enum Direction {
   north = 'north',
