@@ -1,73 +1,91 @@
 import { h, FunctionComponent } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
-import { setupCanvas } from './utils/canvas';
+import { MazeRenderer } from './utils/MazeRenderer';
 
 import style from './Maze.css';
 
 interface Props {
+  animationDelay?: number;
   backgroundColor?: string;
   borderWidth?: number;
-  frontColor?: string;
-  cellSize?: number;
   buildDelay?: number;
+  cellSize?: number;
   introDelay?: number;
   nbColumns?: number;
   nbRows?: number;
+  strokeColor?: string;
 }
 
 const Maze: FunctionComponent<Props> = ({
-  backgroundColor = '#000',
-  borderWidth = 1,
-  frontColor = '#FFF',
-  cellSize = 5,
+  animationDelay = 100,
+  backgroundColor = '#000000',
+  borderWidth = 3,
   buildDelay = 100,
+  cellSize = 15,
   introDelay = 100,
-  nbColumns = 16,
-  nbRows = 16,
+  nbColumns = 8,
+  nbRows = 8,
+  strokeColor = '#FFFFFF',
 }: Props) => {
-  console.log(
-    backgroundColor,
-    borderWidth,
-    frontColor,
-    cellSize,
-    buildDelay,
-    introDelay,
-    nbColumns,
-    nbRows
-  );
-
-  const animationFrameRef = useRef(0);
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const ctxRef = useRef<CanvasRenderingContext2D | null>(null);
-  const sizeRef = useRef({ height: 0, width: 0 });
+  const rendererRef = useRef<MazeRenderer | null>(null);
+  const timeoutRef = useRef<number | null>(null);
 
+  const [canvasSize, setCanvasSize] = useState({ height: 0, width: 0 });
   const [isMessageVisible, setIsMessageVisible] = useState(false);
 
-  const draw = () => {};
+  function blinkMessage(nbBlink = 0, i = 1): Promise<void> {
+    return new Promise((resolve) => {
+      setIsMessageVisible((isMessageVisible) => !isMessageVisible);
 
-  // const handleResize = () => {
-  //   if (ctxRef.current) {
-  //     sizeRef.current = setupCanvas(ctxRef.current);
-  //   }
-  // };
+      if (i >= nbBlink) return resolve();
+
+      timeoutRef.current = window.setTimeout(() => {
+        blinkMessage(nbBlink, i + 1).then(resolve);
+      }, 500);
+    });
+  }
+
+  const generateSuccessMessage = (): string => {
+    const letters = 'KQVWXYZЖБИФДЯЛ';
+    const randomLetter = letters.charAt(
+      Math.floor(Math.random() * letters.length)
+    );
+    const randomNumber = Math.floor(Math.random() * 100).toString();
+    return `${randomLetter}${randomNumber}`;
+  };
+
+  function buildMaze() {
+    rendererRef.current
+      ?.buildMaze()
+      .then(() => blinkMessage(6))
+      .then(buildMaze);
+  }
 
   useEffect(() => {
-    ctxRef.current =
-      canvasRef?.current.getContext('2d', { alpha: false }) ?? null;
+    rendererRef.current = new MazeRenderer(
+      canvasRef.current,
+      borderWidth,
+      nbColumns,
+      nbRows,
+      cellSize,
+      backgroundColor,
+      strokeColor,
+      animationDelay,
+      buildDelay
+    );
 
-    if (!ctxRef.current) return;
+    const canvasSize = rendererRef.current.getCanvasSize();
+    setCanvasSize(canvasSize);
+    setTimeout(() => {
+      buildMaze();
+    }, introDelay);
 
-    sizeRef.current = setupCanvas(ctxRef.current);
-    animationFrameRef.current = requestAnimationFrame(draw);
-
-    return () => cancelAnimationFrame(animationFrameRef.current);
-  }, [draw]);
-
-  // useEffect(() => {
-  //   window?.addEventListener('resize', handleResize);
-  //   return () => window?.removeEventListener('resize', handleResize);
-  // }, []);
+    return () => {
+      rendererRef.current?.destroy();
+    };
+  }, []);
 
   return (
     <div className={style.maze}>
@@ -75,20 +93,27 @@ const Maze: FunctionComponent<Props> = ({
         ref={canvasRef}
         style={{
           backgroundColor,
-          display: isMessageVisible ? 'block' : 'none',
+          display: !isMessageVisible ? 'block' : 'none',
+          height: `${canvasSize.height}px`,
+          width: `${canvasSize.width}px`,
         }}
       />
-      {/* {!isMessageVisible && (
-        <Message
-          background={backgroundColor}
-          borderWidth={borderWidth}
-          color={frontColor}
-          fontSize={cellSize * 2}
-          height={canvasSize.height}
-          message={this.generateSuccessMessage()}
-          width={canvasSize.width}
-        />
-      )} */}
+      {isMessageVisible && (
+        <div
+          className={style.message}
+          style={{
+            backgroundColor,
+            borderWidth,
+            color: strokeColor,
+            fontSize: `${cellSize * 2}px`,
+            height: `${canvasSize.height}px`,
+            letterSpacing: `${cellSize / 5}px`,
+            width: `${canvasSize.width}px`,
+          }}
+        >
+          {generateSuccessMessage()}
+        </div>
+      )}
     </div>
   );
 };

@@ -2,3 +2,14 @@
     display: block;
     image-rendering: pixelated;
 }
+
+.message {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    box-sizing: border-box;
+    font-family: Arial, Helvetica, sans-serif;
+    text-align: center;
+    border: 0 solid white;
+    text-transform: uppercase;
+  }

@@ -1,21 +1,23 @@
-import { Cell, Maze } from './MazeBuilder';
+import { Cell, Maze, MazeBuilder } from './MazeBuilder';
+import { setupCanvas } from './canvas';
 
-const DEFAULT_BORDER_WIDTH = 1;
-const DEFAULT_NB_COLUMS = 16;
-const DEFAULT_NB_ROWS = 16;
-const DEFAULT_CELL_SIZE = 5;
-const DEFAULT_BACKGROUND_COLOR = '#00000';
-const DEFAULT_STROKE_COLOR = '#FFFFFF';
-const DEFAULT_ANIMATION_DELAY = 100;
-
+enum Defaults {
+  borderWidth = 1,
+  mbColumns = 16,
+  nbRows = 16,
+  cellSize = 5,
+  backgroundColor = '#00000',
+  strokeColor = '#FFFFFF',
+  animationDelay = 100,
+  buildDelay = 100,
+}
 export class MazeRenderer {
   mainCanvas: HTMLCanvasElement;
   mainCanvasCtx: null | CanvasRenderingContext2D;
   mazeCanvas: HTMLCanvasElement;
   mazeCanvasCtx: null | CanvasRenderingContext2D;
 
-  animationFrame: null | number;
-  animationTimeout: null | number;
+  builder: MazeBuilder;
 
   borderWidth: number;
   nbColumns: number;
@@ -23,18 +25,22 @@ export class MazeRenderer {
   cellSize: number;
   backgroundColor: string;
   strokeColor: string;
+  animationDelay: number;
+  buildDelay: number;
 
-  onRender?: () => void;
+  animationFrame: null | number = null;
+  animationTimeout: null | number = null;
 
   constructor(
     canvas: HTMLCanvasElement,
-    borderWidth: number = DEFAULT_BORDER_WIDTH,
-    nbColumns: number = DEFAULT_NB_COLUMS,
-    nbRows: number = DEFAULT_NB_ROWS,
-    cellSize: number = DEFAULT_CELL_SIZE,
-    backgroundColor: string = DEFAULT_BACKGROUND_COLOR,
-    strokeColor: string = DEFAULT_STROKE_COLOR,
-    onRender?: () => void
+    borderWidth: number = Defaults.borderWidth,
+    nbColumns: number = Defaults.mbColumns,
+    nbRows: number = Defaults.nbRows,
+    cellSize: number = Defaults.cellSize,
+    backgroundColor: string = Defaults.backgroundColor,
+    strokeColor: string = Defaults.strokeColor,
+    animationDelay: number = Defaults.animationDelay,
+    buildDelay: number = Defaults.buildDelay
   ) {
     this.borderWidth = borderWidth;
     this.nbColumns = nbColumns;
@@ -42,62 +48,29 @@ export class MazeRenderer {
     this.cellSize = cellSize;
     this.backgroundColor = backgroundColor;
     this.strokeColor = strokeColor;
-    this.animationFrame = null;
-    this.animationTimeout = null;
-    this.onRender = onRender;
+    this.animationDelay = animationDelay;
+    this.buildDelay = buildDelay;
+
+    this.builder = new MazeBuilder(nbColumns, nbRows);
 
     this.mainCanvas = canvas;
     this.mazeCanvas = document.createElement('canvas');
 
-    this.mainCanvas.width = nbColumns * cellSize + borderWidth;
-    this.mainCanvas.height = nbRows * cellSize + borderWidth;
-    this.mazeCanvas.width = this.mainCanvas.width;
-    this.mazeCanvas.height = this.mainCanvas.height;
-
-    this.mainCanvasCtx = this.mainCanvas.getContext('2d');
-    this.mazeCanvasCtx = this.mazeCanvas.getContext('2d');
+    this.mainCanvasCtx = this.mainCanvas.getContext('2d', { alpha: false });
+    this.mazeCanvasCtx = this.mazeCanvas.getContext('2d', { alpha: false });
 
     if (this.mainCanvasCtx && this.mazeCanvasCtx) {
-      this.mainCanvasCtx.imageSmoothingEnabled = false;
-      this.mazeCanvasCtx.imageSmoothingEnabled = false;
+      const { width, height } = setupCanvas(
+        this.mainCanvasCtx,
+        nbColumns * cellSize + borderWidth,
+        nbRows * cellSize + borderWidth
+      );
+      setupCanvas(this.mazeCanvasCtx, width, height, false, false);
     }
   }
 
   getCanvasSize(): { width: number; height: number } {
     return { width: this.mazeCanvas.width, height: this.mazeCanvas.height };
-  }
-
-  displayMessage(message = ''): void {
-    if (!this.mazeCanvasCtx) return;
-
-    const fontSize = this.cellSize * 2;
-
-    this.mazeCanvasCtx.fillStyle = this.strokeColor;
-    this.mazeCanvasCtx.fillRect(
-      0,
-      0,
-      this.mazeCanvas.width,
-      this.mazeCanvas.height
-    );
-    this.mazeCanvasCtx.fillStyle = this.backgroundColor;
-    this.mazeCanvasCtx.fillRect(
-      this.borderWidth,
-      this.borderWidth,
-      this.mazeCanvas.width - this.borderWidth * 2,
-      this.mazeCanvas.height - this.borderWidth * 2
-    );
-
-    this.mazeCanvasCtx.font = `${fontSize}px Arial`;
-    this.mazeCanvasCtx.fillStyle = this.strokeColor;
-    this.mazeCanvasCtx.textBaseline = 'middle';
-    this.mazeCanvasCtx.textAlign = 'center';
-    this.mazeCanvasCtx.fillText(
-      message,
-      this.mazeCanvas.width / 2,
-      this.mazeCanvas.height / 2 + fontSize / 12
-    );
-
-    this.render();
   }
 
   drawCell(
@@ -148,15 +121,15 @@ export class MazeRenderer {
     this.render();
   }
 
-  animateIn = (delay = DEFAULT_ANIMATION_DELAY, i = 0): Promise<void> =>
+  animateIn = (i = 0): Promise<void> =>
     new Promise((resolve) => {
       this.drawAnimationStep(i);
 
       if (i >= this.nbColumns - 1) return resolve();
 
       this.animationTimeout = window.setTimeout(() => {
-        this.animateIn(delay, i + 1).then(resolve);
-      }, delay);
+        this.animateIn(i + 1).then(resolve);
+      }, this.animationDelay);
     });
 
   drawAnimationStep = (i: number): void => {
@@ -192,6 +165,22 @@ export class MazeRenderer {
     this.render();
   };
 
+  buildMaze = (): Promise<void> =>
+    new Promise((resolve) => {
+      this.animateIn().then(() => {
+        this.builder.buildLabyrinthWithDelay(
+          this.buildDelay,
+          (cells, isDone) => {
+            if (!isDone) {
+              this.drawLabyrinth(cells);
+            } else {
+              resolve();
+            }
+          }
+        );
+      });
+    });
+
   render(): void {
     if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
 
@@ -199,12 +188,11 @@ export class MazeRenderer {
       if (this.mainCanvasCtx)
         this.mainCanvasCtx.drawImage(this.mazeCanvas, 0, 0);
     });
-
-    if (this.onRender) this.onRender();
   }
 
   destroy(): void {
     if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
     if (this.animationTimeout) clearTimeout(this.animationTimeout);
+    if (this.builder) this.builder.destroy();
   }
 }

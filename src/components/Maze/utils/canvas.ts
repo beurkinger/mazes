@@ -1,10 +1,11 @@
 export const setupCanvas = (
   ctx: CanvasRenderingContext2D,
-  imageSmoothingEnabled = false
+  width: number,
+  height: number,
+  imageSmoothingEnabled = false,
+  withPixelRatio = true
 ): { height: number; width: number } => {
-  const pixelRatio = window?.devicePixelRatio || 1;
-  const { height, width } = ctx.canvas.getBoundingClientRect();
-
+  const pixelRatio: number = (withPixelRatio && window?.devicePixelRatio) || 1;
   ctx.canvas.width = width * pixelRatio;
   ctx.canvas.height = height * pixelRatio;
   ctx.scale(pixelRatio, pixelRatio);
