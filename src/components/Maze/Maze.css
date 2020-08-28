@@ -1,5 +1,9 @@
 .maze {
     display: block;
+}
+
+.maze canvas {
+    display: block;
     image-rendering: pixelated;
 }
 

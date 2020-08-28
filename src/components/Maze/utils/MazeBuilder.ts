@@ -36,7 +36,7 @@ const y_increment = {
 // HELPER FUNCTIONS
 
 /* Return an array of maze cells without any path between them */
-const createCells = (nbColumns: number, nbRows: number): Maze => {
+const createCells = (nbRows: number, nbColumns: number): Maze => {
   const cells = [];
   for (let y = 0; y < nbRows; y++) {
     const line = [];
@@ -53,7 +53,7 @@ const createCells = (nbColumns: number, nbRows: number): Maze => {
 };
 
 /* Return random coordinates inside a maze */
-const getRandomCellCoords = (nbColumns: number, nbRows: number) => [
+const getRandomCellCoords = (nbRows: number, nbColumns: number) => [
   Math.floor(Math.random() * nbColumns),
   Math.floor(Math.random() * nbRows),
 ];
@@ -104,8 +104,7 @@ export class MazeBuilder {
 
   /* Recursively dig a labyrinth inside an array of cells */
   private dig(cells: Maze, x: number, y: number): Maze {
-    const currentCell = getCell(cells, x, y);
-    if (!currentCell) return cells;
+    const currentCell = getCell(cells, x, y) as Cell;
 
     currentCell.visited = true;
 
@@ -139,16 +138,12 @@ export class MazeBuilder {
     x: number,
     y: number,
     delay: number,
-    onWallRemove?: (cells: Maze) => void,
-    onCellDone?: (cells: Maze) => void
+    onWallRemove?: (cells: Maze, coords: { x: number; y: number }) => void,
+    onCellDone?: (cells: Maze, coords: { x: number; y: number }) => void
   ): void {
     const self = this;
     this.diggingTimeout = window?.setTimeout(() => {
-      const currentCell = getCell(cells, x, y);
-      if (!currentCell) {
-        if (onCellDone) onCellDone(cells);
-        return;
-      }
+      const currentCell = getCell(cells, x, y) as Cell;
 
       currentCell.visited = true;
 
@@ -168,7 +163,7 @@ export class MazeBuilder {
 
           if (targetCell && !targetCell.visited) {
             removeWall(currentCell, targetCell, direction);
-            if (onWallRemove) onWallRemove(cells);
+            if (onWallRemove) onWallRemove(cells, { x, y });
             self.digWithDelay(
               cells,
               targetX,
@@ -181,7 +176,7 @@ export class MazeBuilder {
             loop(i + 1);
           }
         } else {
-          if (onCellDone) onCellDone(cells);
+          if (onCellDone) onCellDone(cells, { x, y });
         }
       })(0);
     }, delay);
@@ -197,7 +192,11 @@ export class MazeBuilder {
   // Build a new labyrinth asynchronously, with a delay between each wall removing
   buildLabyrinthWithDelay(
     delay = 100,
-    sendProgress?: (cells: Maze, isDone: boolean) => void
+    sendProgress?: (
+      cells: Maze,
+      isDone: boolean,
+      currentCoords: { x: number; y: number }
+    ) => void
   ): void {
     if (this.diggingTimeout) clearTimeout(this.diggingTimeout);
     this.cells = createCells(this.nbRows, this.nbColumns);
@@ -207,11 +206,11 @@ export class MazeBuilder {
       x,
       y,
       delay,
-      (cells) => {
-        if (sendProgress) sendProgress(cells, false);
+      (cells, coords) => {
+        if (sendProgress) sendProgress(cells, false, coords);
       },
-      (cells) => {
-        if (sendProgress) sendProgress(cells, true);
+      (cells, coords) => {
+        if (sendProgress) sendProgress(cells, true, coords);
       }
     );
   }

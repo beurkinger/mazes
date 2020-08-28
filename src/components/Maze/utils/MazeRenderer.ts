@@ -123,18 +123,6 @@ export class MazeRenderer {
     this.render();
   }
 
-  animateIn = (i = 0): Promise<void> =>
-    new Promise((resolve) => {
-      this.drawAnimationStep(i);
-      this.animationTimeout = window.setTimeout(() => {
-        if (i >= this.nbColumns - 1) {
-          resolve();
-        } else {
-          this.animateIn(i + 1).then(resolve);
-        }
-      }, this.animationDelay);
-    });
-
   drawAnimationStep = (i: number): void => {
     if (!this.mazeCanvasCtx) return;
 
@@ -169,21 +157,39 @@ export class MazeRenderer {
     this.render();
   };
 
-  buildMaze = (): Promise<void> =>
+  animateIn = (i = 0): Promise<void> =>
     new Promise((resolve) => {
-      this.animateIn().then(() => {
-        this.builder.buildLabyrinthWithDelay(
-          this.buildDelay,
-          (cells, isDone) => {
-            if (!isDone) {
-              this.drawLabyrinth(cells);
-            } else {
-              resolve();
-            }
-          }
-        );
-      });
+      this.drawAnimationStep(i);
+      this.animationTimeout = window.setTimeout(() => {
+        if (i >= this.nbColumns - 1) {
+          resolve();
+        } else {
+          this.animateIn(i + 1).then(resolve);
+        }
+      }, this.animationDelay);
     });
+
+  buildMaze = (
+    onUpdate?: (
+      cells: Maze,
+      isDone: boolean,
+      coords: { x: number; y: number }
+    ) => void
+  ): void => {
+    this.animateIn().then(() => {
+      this.builder.buildLabyrinthWithDelay(
+        this.buildDelay,
+        (cells, isDone, coords) => {
+          if (!isDone) {
+            this.drawLabyrinth(cells);
+            if (onUpdate) onUpdate(cells, isDone, coords);
+          } else {
+            if (onUpdate) onUpdate(cells, isDone, coords);
+          }
+        }
+      );
+    });
+  };
 
   render(): void {
     if (this.animationFrame) cancelAnimationFrame(this.animationFrame);

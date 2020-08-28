@@ -57,10 +57,12 @@ const Maze: FunctionComponent<Props> = ({
   };
 
   function buildMaze() {
-    rendererRef.current
-      ?.buildMaze()
-      .then(() => blinkMessage(6))
-      .then(buildMaze);
+    rendererRef.current?.buildMaze((_, isDone, coords) => {
+      console.log(coords);
+      if (isDone) {
+        blinkMessage(6).then(buildMaze);
+      }
+    });
   }
 
   useEffect(() => {
