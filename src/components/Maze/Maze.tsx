@@ -19,14 +19,14 @@ interface Props {
 
 const Maze: FunctionComponent<Props> = ({
   animationDelay = 100,
-  backgroundColor = '#000000',
+  backgroundColor = '#FFFFFF',
   borderWidth = 3,
   buildDelay = 100,
   cellSize = 15,
   introDelay = 100,
   nbColumns = 8,
   nbRows = 8,
-  strokeColor = '#FFFFFF',
+  strokeColor = '#0000000',
 }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<MazeRenderer | null>(null);
@@ -92,7 +92,6 @@ const Maze: FunctionComponent<Props> = ({
       <canvas
         ref={canvasRef}
         style={{
-          backgroundColor,
           display: !isMessageVisible ? 'block' : 'none',
           height: `${canvasSize.height}px`,
           width: `${canvasSize.width}px`,
@@ -102,7 +101,6 @@ const Maze: FunctionComponent<Props> = ({
         <div
           className={style.message}
           style={{
-            backgroundColor,
             borderWidth,
             color: strokeColor,
             fontSize: `${cellSize * 2}px`,

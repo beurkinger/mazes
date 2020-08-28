@@ -6,8 +6,8 @@ enum Defaults {
   mbColumns = 16,
   nbRows = 16,
   cellSize = 5,
-  backgroundColor = '#00000',
-  strokeColor = '#FFFFFF',
+  backgroundColor = '#FFFFFF',
+  strokeColor = '#000000',
   animationDelay = 100,
   buildDelay = 100,
 }
@@ -66,6 +66,8 @@ export class MazeRenderer {
         nbRows * cellSize + borderWidth
       );
       setupCanvas(this.mazeCanvasCtx, width, height, false, false);
+      this.mainCanvasCtx.fillStyle = this.backgroundColor;
+      this.mainCanvasCtx.fillRect(0, 0, width, height);
     }
   }
 
@@ -124,11 +126,12 @@ export class MazeRenderer {
   animateIn = (i = 0): Promise<void> =>
     new Promise((resolve) => {
       this.drawAnimationStep(i);
-
-      if (i >= this.nbColumns - 1) return resolve();
-
       this.animationTimeout = window.setTimeout(() => {
-        this.animateIn(i + 1).then(resolve);
+        if (i >= this.nbColumns - 1) {
+          resolve();
+        } else {
+          this.animateIn(i + 1).then(resolve);
+        }
       }, this.animationDelay);
     });
 
@@ -142,6 +145,7 @@ export class MazeRenderer {
       this.mazeCanvas.width,
       this.mazeCanvas.height
     );
+
     this.mazeCanvasCtx.fillStyle = this.backgroundColor;
     this.mazeCanvasCtx.fillRect(
       this.borderWidth,
