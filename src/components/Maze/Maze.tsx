@@ -33,6 +33,7 @@ const Maze: FunctionComponent<Props> = ({
   const timeoutRef = useRef<number | null>(null);
 
   const [canvasSize, setCanvasSize] = useState({ height: 0, width: 0 });
+  const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [isMessageVisible, setIsMessageVisible] = useState(false);
 
   function blinkMessage(nbBlink = 0, i = 1): Promise<void> {
@@ -58,7 +59,7 @@ const Maze: FunctionComponent<Props> = ({
 
   function buildMaze() {
     rendererRef.current?.buildMaze((_, isDone, coords) => {
-      console.log(coords);
+      setCoords(() => coords);
       if (isDone) {
         blinkMessage(6).then(buildMaze);
       }
@@ -90,7 +91,12 @@ const Maze: FunctionComponent<Props> = ({
   }, []);
 
   return (
-    <div className={style.maze}>
+    <div
+      className={style.maze}
+      style={{
+        color: strokeColor,
+      }}
+    >
       <canvas
         ref={canvasRef}
         style={{
@@ -104,7 +110,6 @@ const Maze: FunctionComponent<Props> = ({
           className={style.message}
           style={{
             borderWidth,
-            color: strokeColor,
             fontSize: `${cellSize * 2}px`,
             height: `${canvasSize.height}px`,
             letterSpacing: `${cellSize / 5}px`,
@@ -114,6 +119,17 @@ const Maze: FunctionComponent<Props> = ({
           {generateSuccessMessage()}
         </div>
       )}
+      <div
+        className={style.coords}
+        style={{
+          fontSize: `${cellSize * 1.5}px`,
+        }}
+      >
+        {`[ 
+          ${(coords.x * 4).toString(16).padStart(2, '0')},  
+          ${(coords.y * 4).toString(16).padStart(2, '0')} 
+        ]`}
+      </div>
     </div>
   );
 };
