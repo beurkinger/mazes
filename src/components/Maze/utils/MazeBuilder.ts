@@ -1,5 +1,18 @@
 import { shuffleArray } from './array';
 
+type Cell = {
+  id: number;
+  walls: {
+    north: boolean;
+    east: boolean;
+    south: boolean;
+    west: boolean;
+  };
+  visited: boolean;
+};
+
+type Maze = Cell[][];
+
 enum Direction {
   north = 'north',
   east = 'east',
@@ -19,19 +32,6 @@ const y_increment = {
   [Direction.south]: 1,
   [Direction.west]: 0,
 };
-
-type Cell = {
-  id: number;
-  walls: {
-    north: boolean;
-    east: boolean;
-    south: boolean;
-    west: boolean;
-  };
-  visited: boolean;
-};
-
-type Maze = Cell[][];
 
 // HELPER FUNCTIONS
 
@@ -53,10 +53,10 @@ const createCells = (nbColumns: number, nbRows: number): Maze => {
 };
 
 /* Return random coordinates inside a maze */
-const getRandomCellCoords = (nbColumns: number, nbRows: number) => ({
-  x: Math.floor(Math.random() * nbColumns),
-  y: Math.floor(Math.random() * nbRows),
-});
+const getRandomCellCoords = (nbColumns: number, nbRows: number) => [
+  Math.floor(Math.random() * nbColumns),
+  Math.floor(Math.random() * nbRows),
+];
 
 /* Return the maze cell identified by the provided coordinates */
 const getCell = (cells: Maze, x: number, y: number): Cell | null =>
@@ -95,7 +95,7 @@ export class MazeBuilder {
   cells: Maze;
   diggingTimeout: number | null;
 
-  constructor(nbColumns = 16, nbRows = 16) {
+  constructor(nbColumns: number, nbRows: number) {
     this.nbColumns = nbColumns;
     this.nbRows = nbRows;
     this.cells = [];
@@ -190,7 +190,7 @@ export class MazeBuilder {
   // Build a new labyrinth
   buildLabyrinth(): Maze {
     this.cells = createCells(this.nbRows, this.nbColumns);
-    const { x, y } = getRandomCellCoords(this.nbRows, this.nbColumns);
+    const [x, y] = getRandomCellCoords(this.nbRows, this.nbColumns);
     return this.dig(this.cells, x, y);
   }
 
@@ -201,7 +201,7 @@ export class MazeBuilder {
   ): void {
     if (this.diggingTimeout) clearTimeout(this.diggingTimeout);
     this.cells = createCells(this.nbRows, this.nbColumns);
-    const { x, y } = getRandomCellCoords(this.nbRows, this.nbColumns);
+    const [x, y] = getRandomCellCoords(this.nbRows, this.nbColumns);
     this.digWithDelay(
       this.cells,
       x,
