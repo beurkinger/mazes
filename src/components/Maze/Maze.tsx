@@ -1,6 +1,7 @@
 import { h, FunctionComponent } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
+import { loopWithDelay } from '../../utils/animation';
 import { MazeRenderer } from './utils/MazeRenderer';
 
 import style from './Maze.css';
@@ -9,11 +10,13 @@ interface Props {
   animationDelay?: number;
   backgroundColor?: string;
   borderWidth?: number;
-  buildDelay?: number;
-  cellSize?: number;
+  blinkingDelay?: number;
+  buildingDelay?: number;
+  cellWidth?: number;
   introDelay?: number;
   nbColumns?: number;
   nbRows?: number;
+  nbBlinks?: number;
   strokeColor?: string;
 }
 
@@ -21,32 +24,22 @@ const Maze: FunctionComponent<Props> = ({
   animationDelay = 100,
   backgroundColor = '#FFFFFF',
   borderWidth = 3,
-  buildDelay = 100,
-  cellSize = 15,
+  blinkingDelay = 500,
+  buildingDelay = 100,
+  cellWidth = 15,
   introDelay = 100,
+  nbBlinks = 6,
   nbColumns = 8,
   nbRows = 8,
   strokeColor = '#0000000',
 }: Props) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const rendererRef = useRef<MazeRenderer | null>(null);
-  const timeoutRef = useRef<number | null>(null);
+  const clearLoopRef = useRef<() => void>(() => null);
 
   const [canvasSize, setCanvasSize] = useState({ height: 0, width: 0 });
   const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [isMessageVisible, setIsMessageVisible] = useState(false);
-
-  function blinkMessage(nbBlink = 0, i = 1): Promise<void> {
-    return new Promise((resolve) => {
-      setIsMessageVisible((isMessageVisible) => !isMessageVisible);
-
-      if (i >= nbBlink) return resolve();
-
-      timeoutRef.current = window.setTimeout(() => {
-        blinkMessage(nbBlink, i + 1).then(resolve);
-      }, 500);
-    });
-  }
 
   const generateSuccessMessage = (): string => {
     const letters = 'АБВГДДЖДЗЕЁЖЗІЙКЛМНОПРСТУЎФХЦЧШЫЬЭЮ';
@@ -61,10 +54,19 @@ const Maze: FunctionComponent<Props> = ({
     rendererRef.current?.buildMaze((_, isDone, coords) => {
       setCoords(coords);
       if (isDone) {
-        blinkMessage(6).then(buildMaze);
+        blink();
       }
     });
   }
+
+  const blink = () => {
+    clearLoopRef.current = loopWithDelay(
+      (i) => setIsMessageVisible(!(i % 2)),
+      buildMaze,
+      nbBlinks,
+      blinkingDelay
+    );
+  };
 
   useEffect(() => {
     rendererRef.current = new MazeRenderer(
@@ -72,11 +74,11 @@ const Maze: FunctionComponent<Props> = ({
       borderWidth,
       nbColumns,
       nbRows,
-      cellSize,
+      cellWidth,
       backgroundColor,
       strokeColor,
       animationDelay,
-      buildDelay
+      buildingDelay
     );
 
     const canvasSize = rendererRef.current.getCanvasSize();
@@ -87,7 +89,9 @@ const Maze: FunctionComponent<Props> = ({
 
     return () => {
       rendererRef.current?.destroy();
+      if (clearLoopRef.current) clearLoopRef.current();
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -110,9 +114,9 @@ const Maze: FunctionComponent<Props> = ({
           className={style.message}
           style={{
             borderWidth,
-            fontSize: `${cellSize * 2}px`,
+            fontSize: `${cellWidth * 2}px`,
             height: `${canvasSize.height}px`,
-            letterSpacing: `${cellSize / 5}px`,
+            letterSpacing: `${cellWidth / 5}px`,
             width: `${canvasSize.width}px`,
           }}
         >
@@ -122,7 +126,7 @@ const Maze: FunctionComponent<Props> = ({
       <div
         className={style.coords}
         style={{
-          fontSize: `${cellSize * 1.5}px`,
+          fontSize: `${cellWidth * 1.5}px`,
         }}
       >
         {`[ 
