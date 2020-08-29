@@ -1,13 +1,20 @@
+
+
 .app {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
   height: 100vh;
   width: 100vw;
+  padding: 5px;
+  background: #770000;
+
+}
+
+.appContent {
+  width: 100%;
+  height: 100%;
+  border-radius: 15px;
   background: var(--color-main-1);
 }
 
-.app > div {
-  margin: 25px 0;
+.appContent > * {
+  border-radius: 15px;
 }

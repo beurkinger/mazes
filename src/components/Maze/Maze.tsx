@@ -49,7 +49,7 @@ const Maze: FunctionComponent<Props> = ({
   }
 
   const generateSuccessMessage = (): string => {
-    const letters = 'KQVWXYZЖБИФДЯЛ';
+    const letters = 'АБВГДДЖДЗЕЁЖЗІЙКЛМНОПРСТУЎФХЦЧШЫЬЭЮ';
     const randomLetter = letters.charAt(
       Math.floor(Math.random() * letters.length)
     );
@@ -59,7 +59,7 @@ const Maze: FunctionComponent<Props> = ({
 
   function buildMaze() {
     rendererRef.current?.buildMaze((_, isDone, coords) => {
-      setCoords(() => coords);
+      setCoords(coords);
       if (isDone) {
         blinkMessage(6).then(buildMaze);
       }

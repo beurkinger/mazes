@@ -1,0 +1,13 @@
+.loadBar {
+  display: flex;
+  border: 3px solid var(--color-white);
+  width: 123px;
+  padding: 4px 2px;
+}
+
+.bar {
+  flex: 1;
+  height: 10px;
+  background: var(--color-white);
+  margin: 0 2px;
+}
