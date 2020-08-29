@@ -5,12 +5,13 @@ import { loopWithDelay } from '../../utils/animation';
 import { MazeRenderer } from './utils/MazeRenderer';
 
 import style from './Maze.css';
+import useTimeout from '../hooks/useTimeout';
 
 interface Props {
   animationDelay?: number;
   backgroundColor?: string;
-  borderWidth?: number;
   blinkingDelay?: number;
+  borderWidth?: number;
   buildingDelay?: number;
   cellWidth?: number;
   introDelay?: number;
@@ -23,8 +24,8 @@ interface Props {
 const Maze: FunctionComponent<Props> = ({
   animationDelay = 100,
   backgroundColor = '#FFFFFF',
-  borderWidth = 3,
   blinkingDelay = 500,
+  borderWidth = 3,
   buildingDelay = 100,
   cellWidth = 15,
   introDelay = 100,
@@ -50,14 +51,14 @@ const Maze: FunctionComponent<Props> = ({
     return `${randomLetter}${randomNumber}`;
   };
 
-  function buildMaze() {
+  const buildMaze = () => {
     rendererRef.current?.buildMaze((_, isDone, coords) => {
       setCoords(coords);
       if (isDone) {
         blink();
       }
     });
-  }
+  };
 
   const blink = () => {
     clearLoopRef.current = loopWithDelay(
@@ -83,9 +84,6 @@ const Maze: FunctionComponent<Props> = ({
 
     const canvasSize = rendererRef.current.getCanvasSize();
     setCanvasSize(canvasSize);
-    setTimeout(() => {
-      buildMaze();
-    }, introDelay);
 
     return () => {
       rendererRef.current?.destroy();
@@ -93,6 +91,8 @@ const Maze: FunctionComponent<Props> = ({
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useTimeout(buildMaze, introDelay);
 
   return (
     <div
