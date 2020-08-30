@@ -1,4 +1,4 @@
-import { shuffleArray } from './array';
+import { shuffleArray } from '../../../utils/array';
 
 export type Vector = { x: number; y: number };
 
