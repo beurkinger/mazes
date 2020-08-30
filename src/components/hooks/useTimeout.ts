@@ -4,7 +4,7 @@ const useTimeout = (callback: () => void, duration: number): void => {
   const timeoutRef = useRef<number | null>(null);
 
   useEffect(() => {
-    timeoutRef.current = window.setTimeout(callback, duration);
+    timeoutRef.current = window?.setTimeout(callback, duration);
 
     return () => {
       if (timeoutRef.current) clearTimeout(timeoutRef.current);

@@ -1,5 +1,5 @@
 import { loopWithDelay } from '../../../utils/animation';
-import { Cell, Maze, MazeBuilder } from './MazeBuilder';
+import { Cell, Maze, buildLabyrinthByStep } from './MazeBuilder';
 import { setupCanvas } from './canvas';
 
 enum Defaults {
@@ -18,8 +18,6 @@ export class MazeRenderer {
   mazeCanvas: HTMLCanvasElement;
   mazeCanvasCtx: null | CanvasRenderingContext2D;
 
-  builder: MazeBuilder;
-
   animatingDelay: number;
   buildingDelay: number;
   backgroundColor: string;
@@ -30,6 +28,7 @@ export class MazeRenderer {
   strokeColor: string;
 
   animationFrame: null | number = null;
+  buildingTimeout: null | number = null;
 
   clearAnimateInLoop: null | (() => void) = null;
 
@@ -52,8 +51,6 @@ export class MazeRenderer {
     this.strokeColor = strokeColor;
     this.animatingDelay = animatingDelay;
     this.buildingDelay = buildingDelay;
-
-    this.builder = new MazeBuilder(nbColumns, nbRows);
 
     this.mainCanvas = canvas;
     this.mazeCanvas = document.createElement('canvas');
@@ -175,11 +172,13 @@ export class MazeRenderer {
     ) => void = () => null
   ): void => {
     this.animateIn(() => {
-      this.builder.buildLabyrinthWithDelay(
-        this.buildingDelay,
-        (cells, isDone, coords) => {
+      buildLabyrinthByStep(
+        this.nbRows,
+        this.nbColumns,
+        (cells, isDone, coords, next) => {
           if (!isDone) this.drawLabyrinth(cells);
           onUpdate(isDone, coords);
+          if (!isDone) this.buildingTimeout = window?.setTimeout(next, 100);
         }
       );
     });
@@ -195,8 +194,8 @@ export class MazeRenderer {
   }
 
   destroy(): void {
-    if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
+    if (this.animationFrame) window?.cancelAnimationFrame(this.animationFrame);
+    if (this.buildingTimeout) window?.clearTimeout(this.buildingTimeout);
     if (this.clearAnimateInLoop) this.clearAnimateInLoop();
-    if (this.builder) this.builder.destroy();
   }
 }

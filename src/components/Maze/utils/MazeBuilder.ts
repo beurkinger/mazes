@@ -35,7 +35,16 @@ const y_increment = {
   [Direction.west]: 0,
 };
 
-// HELPER FUNCTIONS
+const getShuffledDirections = (): Direction[] => {
+  const directions = [
+    Direction.north,
+    Direction.east,
+    Direction.south,
+    Direction.west,
+  ];
+  shuffleArray(directions);
+  return directions;
+};
 
 /* Return an array of maze cells without any path between them */
 const createCells = (nbRows: number, nbColumns: number): Maze => {
@@ -93,131 +102,89 @@ const removeWall = (
   }
 };
 
-export class MazeBuilder {
-  nbColumns: number;
-  nbRows: number;
-  cells: Maze;
-  diggingTimeout: number | null;
+/* Recursively dig a labyrinth inside an array of cells */
+const dig = (cells: Maze, coords: Vector): Maze => {
+  const currentCell = getCell(cells, coords) as Cell;
+  currentCell.visited = true;
 
-  constructor(nbColumns: number, nbRows: number) {
-    this.nbColumns = nbColumns;
-    this.nbRows = nbRows;
-    this.cells = [];
-    this.diggingTimeout = null;
+  const directions = getShuffledDirections();
+
+  for (let i = 0; i < directions.length; i++) {
+    const direction = directions[i];
+    const targetCoords = getTargetCellCoords(coords, direction);
+    const targetCell = getCell(cells, targetCoords);
+
+    if (targetCell && !targetCell.visited) {
+      removeWall(currentCell, targetCell, direction);
+      dig(cells, targetCoords);
+    }
   }
+  return cells;
+};
 
-  /* Recursively dig a labyrinth inside an array of cells */
-  private dig(cells: Maze, coords: Vector): Maze {
-    const currentCell = getCell(cells, coords) as Cell;
+/*
+ * Asynchronously and recursively dig a labyrinth inside an array of cells,
+ * step by step
+ */
+const digByStep = (
+  cells: Maze,
+  coords: Vector,
+  onUpdate: (
+    cells: Maze,
+    isDone: boolean,
+    coords: Vector,
+    nextStep: () => void
+  ) => void,
+  goBack?: () => void
+): void => {
+  const currentCell = getCell(cells, coords) as Cell;
+  currentCell.visited = true;
 
-    currentCell.visited = true;
+  const directions = getShuffledDirections();
 
-    const directions = [
-      Direction.north,
-      Direction.east,
-      Direction.south,
-      Direction.west,
-    ];
-    shuffleArray(directions);
-
-    for (let i = 0; i < directions.length; i++) {
+  (function loop(i) {
+    if (i < directions.length) {
       const direction = directions[i];
       const targetCoords = getTargetCellCoords(coords, direction);
       const targetCell = getCell(cells, targetCoords);
 
       if (targetCell && !targetCell.visited) {
         removeWall(currentCell, targetCell, direction);
-        this.dig(cells, targetCoords);
+        const goBack = () => loop(i + 1);
+        const nextStep = () => digByStep(cells, targetCoords, onUpdate, goBack);
+        onUpdate(cells, false, coords, nextStep);
+      } else {
+        loop(i + 1);
+      }
+    } else {
+      if (goBack) {
+        goBack();
+      } else {
+        onUpdate(cells, true, coords, () => null);
       }
     }
-    return cells;
-  }
+  })(0);
+};
 
-  /*
-   * Asynchronously and recursively dig a labyrinth inside an array of cells,
-   * with a delay between each wall removing
-   */
-  private digWithDelay(
+/* Build a new labyrinth */
+export const buildLabyrinth = (nbRows: number, nbColumns: number): Maze => {
+  const cells = createCells(nbRows, nbColumns);
+  const coords = getRandomCellCoords(nbRows, nbColumns);
+  return dig(cells, coords);
+};
+
+/* Build a new labyrinth asynchronously, step by step */
+export const buildLabyrinthByStep = (
+  nbRows: number,
+  nbColumns: number,
+  onUpdate: (
     cells: Maze,
+    isDone: boolean,
     coords: Vector,
-    delay: number,
-    onWallRemove?: (cells: Maze, coords: Vector) => void,
-    onCellDone?: (cells: Maze, coords: Vector) => void
-  ): void {
-    this.diggingTimeout = window?.setTimeout(() => {
-      const currentCell = getCell(cells, coords) as Cell;
-
-      currentCell.visited = true;
-
-      const directions = [
-        Direction.north,
-        Direction.east,
-        Direction.south,
-        Direction.west,
-      ];
-      shuffleArray(directions);
-
-      const self = this;
-      (function loop(i) {
-        if (i < directions.length) {
-          const direction = directions[i];
-          const targetCoords = getTargetCellCoords(coords, direction);
-          const targetCell = getCell(cells, targetCoords);
-
-          if (targetCell && !targetCell.visited) {
-            removeWall(currentCell, targetCell, direction);
-            if (onWallRemove) onWallRemove(cells, coords);
-            self.digWithDelay(cells, targetCoords, delay, onWallRemove, () =>
-              loop(i + 1)
-            );
-          } else {
-            loop(i + 1);
-          }
-        } else {
-          if (onCellDone) onCellDone(cells, coords);
-        }
-      })(0);
-    }, delay);
-  }
-
-  // Build a new labyrinth
-  buildLabyrinth(): Maze {
-    this.cells = createCells(this.nbRows, this.nbColumns);
-    const coords = getRandomCellCoords(this.nbRows, this.nbColumns);
-    return this.dig(this.cells, coords);
-  }
-
-  // Build a new labyrinth asynchronously, with a delay between each wall removing
-  buildLabyrinthWithDelay(
-    delay = 100,
-    sendProgress?: (
-      cells: Maze,
-      isDone: boolean,
-      currentCoords: { x: number; y: number }
-    ) => void
-  ): void {
-    if (this.diggingTimeout) clearTimeout(this.diggingTimeout);
-    this.cells = createCells(this.nbRows, this.nbColumns);
-    const coords = getRandomCellCoords(this.nbRows, this.nbColumns);
-    this.digWithDelay(
-      this.cells,
-      coords,
-      delay,
-      (cells, coords) => {
-        if (sendProgress) sendProgress(cells, false, coords);
-      },
-      (cells, coords) => {
-        if (sendProgress) sendProgress(cells, true, coords);
-      }
-    );
-  }
-
-  getCells(): Maze {
-    return this.cells;
-  }
-
-  destroy(): void {
-    if (this.diggingTimeout) clearTimeout(this.diggingTimeout);
-    this.cells = [];
-  }
-}
+    nextStep: () => void
+  ) => void
+): void => {
+  const cells = createCells(nbRows, nbColumns);
+  const startingCoords = getRandomCellCoords(nbRows, nbColumns);
+  digByStep(cells, startingCoords, onUpdate);
+};

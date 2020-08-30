@@ -5,7 +5,7 @@ export const loopWithDelay = (
   loopDuration: number
 ): (() => void) => {
   let i = 0;
-  const interval = window.setInterval(() => {
+  const interval = window?.setInterval(() => {
     onLoop(i);
     if (i + 1 === nbLoops) {
       clearInterval(interval);
@@ -15,6 +15,6 @@ export const loopWithDelay = (
   }, loopDuration);
 
   return () => {
-    if (interval) clearInterval(interval);
+    if (interval) window?.clearInterval(interval);
   };
 };
