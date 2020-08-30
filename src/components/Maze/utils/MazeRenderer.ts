@@ -4,7 +4,7 @@ import {
   drawLabyrinth,
   buildLabyrinthByStep,
   Maze,
-} from './MazeBuilder';
+} from './mazeUtils';
 import { setupCanvas } from './canvas';
 
 enum Defaults {
