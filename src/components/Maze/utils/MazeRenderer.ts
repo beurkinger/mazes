@@ -128,7 +128,7 @@ export class MazeRenderer {
     this.clearAnimateInLoop = loopWithDelay(
       (i) => this.drawAnimationStep(i),
       onDone,
-      this.nbColumns,
+      this.nbColumns + 1,
       this.animatingDelay
     );
   };
