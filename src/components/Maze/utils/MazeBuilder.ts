@@ -188,3 +188,40 @@ export const buildLabyrinthByStep = (
   const startingCoords = getRandomCellCoords(nbRows, nbColumns);
   digByStep(cells, startingCoords, onUpdate);
 };
+
+export const drawCell = (
+  ctx: CanvasRenderingContext2D,
+  coords: Vector,
+  cell: Cell | null,
+  borderWidth: number,
+  cellWidth: number
+): void => {
+  const x = coords.x * cellWidth;
+  const y = coords.y * cellWidth;
+
+  if (cell === null || cell.walls.north) {
+    ctx.fillRect(x, y, cellWidth + borderWidth, borderWidth);
+  }
+  if (cell === null || cell.walls.east) {
+    ctx.fillRect(x + cellWidth, y, borderWidth, cellWidth + borderWidth);
+  }
+  if (cell === null || cell.walls.south) {
+    ctx.fillRect(x + cellWidth, y + cellWidth, -cellWidth, borderWidth);
+  }
+  if (cell === null || cell.walls.west) {
+    ctx.fillRect(x, y + cellWidth, borderWidth, -cellWidth);
+  }
+};
+
+export const drawLabyrinth = (
+  ctx: CanvasRenderingContext2D,
+  cells: Maze,
+  borderWidth: number,
+  cellWidth: number
+): void => {
+  for (let y = 0; y < cells.length; y++) {
+    for (let x = 0; x < cells[y].length; x++) {
+      drawCell(ctx, { x, y }, cells[y][x], borderWidth, cellWidth);
+    }
+  }
+};

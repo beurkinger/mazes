@@ -1,5 +1,10 @@
 import { loopWithDelay } from '../../../utils/animation';
-import { Cell, Maze, buildLabyrinthByStep } from './MazeBuilder';
+import {
+  drawCell,
+  drawLabyrinth,
+  buildLabyrinthByStep,
+  Maze,
+} from './MazeBuilder';
 import { setupCanvas } from './canvas';
 
 enum Defaults {
@@ -74,83 +79,46 @@ export class MazeRenderer {
     return { width: this.mazeCanvas.width, height: this.mazeCanvas.height };
   }
 
-  drawCell(
-    ctx: CanvasRenderingContext2D,
-    x: number,
-    y: number,
-    cell: Cell | null
-  ): void {
-    const { borderWidth, cellSize } = this;
-    if (!ctx) return;
-
-    if (cell === null || cell.walls.north) {
-      ctx.fillRect(x, y, cellSize + borderWidth, borderWidth);
-    }
-    if (cell === null || cell.walls.east) {
-      ctx.fillRect(x + cellSize, y, borderWidth, cellSize + borderWidth);
-    }
-    if (cell === null || cell.walls.south) {
-      ctx.fillRect(x + cellSize, y + cellSize, -cellSize, borderWidth);
-    }
-    if (cell === null || cell.walls.west) {
-      ctx.fillRect(x, y + cellSize, borderWidth, -cellSize);
-    }
-  }
-
-  drawLabyrinth(cells: Maze): void {
+  drawLabyrinth = (cells: Maze): void => {
     if (!this.mazeCanvasCtx) return;
-
+    const { width, height } = this.getCanvasSize();
     this.mazeCanvasCtx.fillStyle = this.backgroundColor;
-    this.mazeCanvasCtx.fillRect(
-      0,
-      0,
-      this.mazeCanvas.width - 1,
-      this.mazeCanvas.height - 1
-    );
-
+    this.mazeCanvasCtx.fillRect(0, 0, width, height);
     this.mazeCanvasCtx.fillStyle = this.strokeColor;
-    for (let y = 0; y < cells.length; y++) {
-      for (let x = 0; x < cells[y].length; x++) {
-        this.drawCell(
-          this.mazeCanvasCtx,
-          x * this.cellSize,
-          y * this.cellSize,
-          cells[y][x]
-        );
-      }
-    }
+    drawLabyrinth(this.mazeCanvasCtx, cells, this.borderWidth, this.cellSize);
     this.render();
-  }
+  };
 
-  drawAnimationStep = (i: number): void => {
-    if (!this.mazeCanvasCtx) return;
+  drawAnimationStep = (stepIndex: number): void => {
+    const {
+      backgroundColor,
+      borderWidth,
+      cellSize,
+      mazeCanvasCtx,
+      nbRows,
+      nbColumns,
+      strokeColor,
+    } = this;
+    if (!mazeCanvasCtx) return;
 
-    this.mazeCanvasCtx.fillStyle = this.strokeColor;
-    this.mazeCanvasCtx.fillRect(
-      0,
-      0,
-      this.mazeCanvas.width,
-      this.mazeCanvas.height
+    const { height, width } = this.getCanvasSize();
+
+    mazeCanvasCtx.fillStyle = strokeColor;
+    mazeCanvasCtx.fillRect(0, 0, width, height);
+
+    mazeCanvasCtx.fillStyle = backgroundColor;
+    mazeCanvasCtx.fillRect(
+      borderWidth,
+      borderWidth,
+      width - borderWidth * 2,
+      height - borderWidth * 2
     );
 
-    this.mazeCanvasCtx.fillStyle = this.backgroundColor;
-    this.mazeCanvasCtx.fillRect(
-      this.borderWidth,
-      this.borderWidth,
-      this.mazeCanvas.width - this.borderWidth * 2,
-      this.mazeCanvas.height - this.borderWidth * 2
-    );
-
-    this.mazeCanvasCtx.fillStyle = this.strokeColor;
-    for (let y = 0; y < this.nbRows; y++) {
-      for (let x = 0; x < this.nbColumns; x++) {
-        if (x <= i)
-          this.drawCell(
-            this.mazeCanvasCtx,
-            x * this.cellSize,
-            y * this.cellSize,
-            null
-          );
+    mazeCanvasCtx.fillStyle = strokeColor;
+    for (let y = 0; y < nbRows; y++) {
+      for (let x = 0; x < nbColumns; x++) {
+        if (x <= stepIndex)
+          drawCell(mazeCanvasCtx, { x, y }, null, borderWidth, cellSize);
       }
     }
     this.render();
@@ -158,9 +126,9 @@ export class MazeRenderer {
 
   animateIn = (onDone: () => void): void => {
     this.clearAnimateInLoop = loopWithDelay(
-      (i) => this.drawAnimationStep(i),
+      (i) => this.drawAnimationStep(i + 1),
       onDone,
-      this.nbColumns - 1,
+      this.nbColumns,
       this.animatingDelay
     );
   };
@@ -176,9 +144,10 @@ export class MazeRenderer {
         this.nbRows,
         this.nbColumns,
         (cells, isDone, coords, next) => {
-          if (!isDone) this.drawLabyrinth(cells);
           onUpdate(isDone, coords);
-          if (!isDone) this.buildingTimeout = window?.setTimeout(next, 100);
+          if (isDone || !this.mazeCanvasCtx) return;
+          this.drawLabyrinth(cells);
+          this.buildingTimeout = window?.setTimeout(next, 100);
         }
       );
     });
