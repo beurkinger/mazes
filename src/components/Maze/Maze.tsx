@@ -1,7 +1,7 @@
 import { h, FunctionComponent } from 'preact';
 import { useEffect, useRef, useState } from 'preact/hooks';
 
-import { loopWithDelay } from '../../utils/animation';
+import { loopWithDelay } from '../../utils/loop';
 import { MazeRenderer } from './utils/MazeRenderer';
 
 import style from './Maze.css';

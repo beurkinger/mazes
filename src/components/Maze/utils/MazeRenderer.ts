@@ -1,4 +1,4 @@
-import { loopWithDelay } from '../../../utils/animation';
+import { loopWithDelay } from '../../../utils/loop';
 import {
   drawCell,
   drawLabyrinth,
