@@ -1,3 +1,4 @@
+import { loopWithDelay } from '../../../utils/animation';
 import { Cell, Maze, MazeBuilder } from './MazeBuilder';
 import { setupCanvas } from './canvas';
 
@@ -8,8 +9,8 @@ enum Defaults {
   cellSize = 5,
   backgroundColor = '#FFFFFF',
   strokeColor = '#000000',
-  animationDelay = 100,
-  buildDelay = 100,
+  animatingDelay = 100,
+  buildingDelay = 100,
 }
 export class MazeRenderer {
   mainCanvas: HTMLCanvasElement;
@@ -19,17 +20,18 @@ export class MazeRenderer {
 
   builder: MazeBuilder;
 
+  animatingDelay: number;
+  buildingDelay: number;
+  backgroundColor: string;
   borderWidth: number;
+  cellSize: number;
   nbColumns: number;
   nbRows: number;
-  cellSize: number;
-  backgroundColor: string;
   strokeColor: string;
-  animationDelay: number;
-  buildDelay: number;
 
   animationFrame: null | number = null;
-  animationTimeout: null | number = null;
+
+  clearAnimateInLoop: null | (() => void) = null;
 
   constructor(
     canvas: HTMLCanvasElement,
@@ -39,8 +41,8 @@ export class MazeRenderer {
     cellSize: number = Defaults.cellSize,
     backgroundColor: string = Defaults.backgroundColor,
     strokeColor: string = Defaults.strokeColor,
-    animationDelay: number = Defaults.animationDelay,
-    buildDelay: number = Defaults.buildDelay
+    animatingDelay: number = Defaults.animatingDelay,
+    buildingDelay: number = Defaults.buildingDelay
   ) {
     this.borderWidth = borderWidth;
     this.nbColumns = nbColumns;
@@ -48,8 +50,8 @@ export class MazeRenderer {
     this.cellSize = cellSize;
     this.backgroundColor = backgroundColor;
     this.strokeColor = strokeColor;
-    this.animationDelay = animationDelay;
-    this.buildDelay = buildDelay;
+    this.animatingDelay = animatingDelay;
+    this.buildingDelay = buildingDelay;
 
     this.builder = new MazeBuilder(nbColumns, nbRows);
 
@@ -157,35 +159,27 @@ export class MazeRenderer {
     this.render();
   };
 
-  animateIn = (i = 0): Promise<void> =>
-    new Promise((resolve) => {
-      this.drawAnimationStep(i);
-      this.animationTimeout = window.setTimeout(() => {
-        if (i >= this.nbColumns - 1) {
-          resolve();
-        } else {
-          this.animateIn(i + 1).then(resolve);
-        }
-      }, this.animationDelay);
-    });
+  animateIn = (onDone: () => void): void => {
+    this.clearAnimateInLoop = loopWithDelay(
+      (i) => this.drawAnimationStep(i),
+      onDone,
+      this.nbColumns - 1,
+      this.animatingDelay
+    );
+  };
 
   buildMaze = (
-    onUpdate?: (
-      cells: Maze,
+    onUpdate: (
       isDone: boolean,
       coords: { x: number; y: number }
-    ) => void
+    ) => void = () => null
   ): void => {
-    this.animateIn().then(() => {
+    this.animateIn(() => {
       this.builder.buildLabyrinthWithDelay(
-        this.buildDelay,
+        this.buildingDelay,
         (cells, isDone, coords) => {
-          if (!isDone) {
-            this.drawLabyrinth(cells);
-            if (onUpdate) onUpdate(cells, isDone, coords);
-          } else {
-            if (onUpdate) onUpdate(cells, isDone, coords);
-          }
+          if (!isDone) this.drawLabyrinth(cells);
+          onUpdate(isDone, coords);
         }
       );
     });
@@ -202,7 +196,7 @@ export class MazeRenderer {
 
   destroy(): void {
     if (this.animationFrame) cancelAnimationFrame(this.animationFrame);
-    if (this.animationTimeout) clearTimeout(this.animationTimeout);
+    if (this.clearAnimateInLoop) this.clearAnimateInLoop();
     if (this.builder) this.builder.destroy();
   }
 }

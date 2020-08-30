@@ -52,7 +52,7 @@ const Maze: FunctionComponent<Props> = ({
   };
 
   const buildMaze = () => {
-    rendererRef.current?.buildMaze((_, isDone, coords) => {
+    rendererRef.current?.buildMaze((isDone, coords) => {
       setCoords(coords);
       if (isDone) {
         blink();
