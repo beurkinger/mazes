@@ -126,7 +126,7 @@ export class MazeRenderer {
 
   animateIn = (onDone: () => void): void => {
     this.clearAnimateInLoop = loopWithDelay(
-      (i) => this.drawAnimationStep(i + 1),
+      (i) => this.drawAnimationStep(i),
       onDone,
       this.nbColumns,
       this.animatingDelay

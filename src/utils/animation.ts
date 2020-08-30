@@ -5,14 +5,15 @@ export const loopWithDelay = (
   loopDuration: number
 ): (() => void) => {
   let i = 0;
+  onLoop(i);
   const interval = window?.setInterval(() => {
+    i += 1;
     if (i === nbLoops) {
       clearInterval(interval);
       onDone();
       return;
     }
     onLoop(i);
-    i += 1;
   }, loopDuration);
 
   return () => {

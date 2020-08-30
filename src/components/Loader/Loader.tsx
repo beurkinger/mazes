@@ -3,28 +3,32 @@ import { useEffect, useRef, useState } from 'preact/hooks';
 
 import { loopWithDelay } from '../../utils/animation';
 
-import style from './LoadBar.css';
+import style from './Loader.css';
 
 interface Props {
   blinkingDelay?: number;
   loadingDelay?: number;
   nbBars?: number;
-  nbBlinks?: 5;
+  nbBlinks?: number;
 }
 
-const LoadBar: FunctionComponent<Props> = ({
+const Loader: FunctionComponent<Props> = ({
   blinkingDelay = 500,
   loadingDelay = 1000,
   nbBars = 10,
-  nbBlinks = 5,
+  nbBlinks = 6,
 }: Props) => {
   const clearLoopRef = useRef<() => void>(() => null);
   const [nbBarsVisible, setNbBarsVisible] = useState(0);
 
   const loadBars = () => {
     clearLoopRef.current = loopWithDelay(
-      (i) => setNbBarsVisible(i + 1),
-      blinkBars,
+      (i) => {
+        setNbBarsVisible(i);
+      },
+      () => {
+        blinkBars();
+      },
       nbBars,
       loadingDelay
     );
@@ -32,7 +36,7 @@ const LoadBar: FunctionComponent<Props> = ({
 
   const blinkBars = () => {
     clearLoopRef.current = loopWithDelay(
-      (i) => setNbBarsVisible(i % 2 ? nbBars : 0),
+      (i) => setNbBarsVisible(i % 2 ? 0 : nbBars),
       loadBars,
       nbBlinks,
       blinkingDelay
@@ -60,4 +64,4 @@ const LoadBar: FunctionComponent<Props> = ({
   );
 };
 
-export default LoadBar;
+export default Loader;

@@ -2,7 +2,7 @@ import { h, FunctionComponent } from 'preact';
 
 import theme from '../../theme/variables';
 
-import LoadBar from '../LoadBar/LoadBar';
+import Loader from '../Loader/Loader';
 import Maze from '../Maze/Maze';
 
 import style from './Mazes.css';
@@ -13,7 +13,7 @@ const Mazes: FunctionComponent = () => {
   return (
     <div className={style.mazes}>
       <div className={style.mazesContent}>
-        <LoadBar />
+        <Loader />
         <div className={style.separator} />
         <Maze
           backgroundColor={backgroundColor}
