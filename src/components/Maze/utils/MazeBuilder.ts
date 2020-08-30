@@ -1,5 +1,7 @@
 import { shuffleArray } from './array';
 
+export type Vector = { x: number; y: number };
+
 export type Cell = {
   id: number;
   walls: {
@@ -53,20 +55,22 @@ const createCells = (nbRows: number, nbColumns: number): Maze => {
 };
 
 /* Return random coordinates inside a maze */
-const getRandomCellCoords = (nbRows: number, nbColumns: number) => [
-  Math.floor(Math.random() * nbColumns),
-  Math.floor(Math.random() * nbRows),
-];
+const getRandomCellCoords = (nbRows: number, nbColumns: number): Vector => ({
+  x: Math.floor(Math.random() * nbColumns),
+  y: Math.floor(Math.random() * nbRows),
+});
 
 /* Return the maze cell identified by the provided coordinates */
-const getCell = (cells: Maze, x: number, y: number): Cell | null =>
-  cells[y] && cells[y][x] ? cells[y][x] : null;
+const getCell = (cells: Maze, coords: Vector): Cell | null =>
+  cells[coords.y] && cells[coords.y][coords.x]
+    ? cells[coords.y][coords.x]
+    : null;
 
 /* Returns the coordinates of an adjacent cell, using a current position and a direction */
-const getTargetCellCoords = (x: number, y: number, direction: Direction) => [
-  x + x_increment[direction],
-  y + y_increment[direction],
-];
+const getTargetCellCoords = (coords: Vector, direction: Direction): Vector => ({
+  x: coords.x + x_increment[direction],
+  y: coords.y + y_increment[direction],
+});
 
 /* Remove the wall between two cells */
 const removeWall = (
@@ -103,8 +107,8 @@ export class MazeBuilder {
   }
 
   /* Recursively dig a labyrinth inside an array of cells */
-  private dig(cells: Maze, x: number, y: number): Maze {
-    const currentCell = getCell(cells, x, y) as Cell;
+  private dig(cells: Maze, coords: Vector): Maze {
+    const currentCell = getCell(cells, coords) as Cell;
 
     currentCell.visited = true;
 
@@ -118,12 +122,12 @@ export class MazeBuilder {
 
     for (let i = 0; i < directions.length; i++) {
       const direction = directions[i];
-      const [targetX, targetY] = getTargetCellCoords(x, y, direction);
-      const targetCell = getCell(cells, targetX, targetY);
+      const targetCoords = getTargetCellCoords(coords, direction);
+      const targetCell = getCell(cells, targetCoords);
 
       if (targetCell && !targetCell.visited) {
         removeWall(currentCell, targetCell, direction);
-        this.dig(cells, targetX, targetY);
+        this.dig(cells, targetCoords);
       }
     }
     return cells;
@@ -135,15 +139,13 @@ export class MazeBuilder {
    */
   private digWithDelay(
     cells: Maze,
-    x: number,
-    y: number,
+    coords: Vector,
     delay: number,
-    onWallRemove?: (cells: Maze, coords: { x: number; y: number }) => void,
-    onCellDone?: (cells: Maze, coords: { x: number; y: number }) => void
+    onWallRemove?: (cells: Maze, coords: Vector) => void,
+    onCellDone?: (cells: Maze, coords: Vector) => void
   ): void {
-    const self = this;
     this.diggingTimeout = window?.setTimeout(() => {
-      const currentCell = getCell(cells, x, y) as Cell;
+      const currentCell = getCell(cells, coords) as Cell;
 
       currentCell.visited = true;
 
@@ -155,28 +157,24 @@ export class MazeBuilder {
       ];
       shuffleArray(directions);
 
+      const self = this;
       (function loop(i) {
         if (i < directions.length) {
           const direction = directions[i];
-          const [targetX, targetY] = getTargetCellCoords(x, y, direction);
-          const targetCell = getCell(cells, targetX, targetY);
+          const targetCoords = getTargetCellCoords(coords, direction);
+          const targetCell = getCell(cells, targetCoords);
 
           if (targetCell && !targetCell.visited) {
             removeWall(currentCell, targetCell, direction);
-            if (onWallRemove) onWallRemove(cells, { x, y });
-            self.digWithDelay(
-              cells,
-              targetX,
-              targetY,
-              delay,
-              onWallRemove,
-              () => loop(i + 1)
+            if (onWallRemove) onWallRemove(cells, coords);
+            self.digWithDelay(cells, targetCoords, delay, onWallRemove, () =>
+              loop(i + 1)
             );
           } else {
             loop(i + 1);
           }
         } else {
-          if (onCellDone) onCellDone(cells, { x, y });
+          if (onCellDone) onCellDone(cells, coords);
         }
       })(0);
     }, delay);
@@ -185,8 +183,8 @@ export class MazeBuilder {
   // Build a new labyrinth
   buildLabyrinth(): Maze {
     this.cells = createCells(this.nbRows, this.nbColumns);
-    const [x, y] = getRandomCellCoords(this.nbRows, this.nbColumns);
-    return this.dig(this.cells, x, y);
+    const coords = getRandomCellCoords(this.nbRows, this.nbColumns);
+    return this.dig(this.cells, coords);
   }
 
   // Build a new labyrinth asynchronously, with a delay between each wall removing
@@ -200,11 +198,10 @@ export class MazeBuilder {
   ): void {
     if (this.diggingTimeout) clearTimeout(this.diggingTimeout);
     this.cells = createCells(this.nbRows, this.nbColumns);
-    const [x, y] = getRandomCellCoords(this.nbRows, this.nbColumns);
+    const coords = getRandomCellCoords(this.nbRows, this.nbColumns);
     this.digWithDelay(
       this.cells,
-      x,
-      y,
+      coords,
       delay,
       (cells, coords) => {
         if (sendProgress) sendProgress(cells, false, coords);
