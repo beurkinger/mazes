@@ -60,16 +60,13 @@ export class MazeRenderer {
     this.mainCanvas = canvas;
     this.mazeCanvas = document.createElement('canvas');
 
-    this.mainCanvasCtx = this.mainCanvas.getContext('2d', { alpha: false });
-    this.mazeCanvasCtx = this.mazeCanvas.getContext('2d', { alpha: false });
+    const width = nbColumns * cellSize + borderWidth;
+    const height = nbRows * cellSize + borderWidth;
 
-    if (this.mainCanvasCtx && this.mazeCanvasCtx) {
-      const { width, height } = setupCanvas(
-        this.mainCanvasCtx,
-        nbColumns * cellSize + borderWidth,
-        nbRows * cellSize + borderWidth
-      );
-      setupCanvas(this.mazeCanvasCtx, width, height, false, false);
+    this.mainCanvasCtx = setupCanvas(this.mainCanvas, width, height);
+    this.mazeCanvasCtx = setupCanvas(this.mazeCanvas, width, height, false);
+
+    if (this.mainCanvasCtx) {
       this.mainCanvasCtx.fillStyle = this.backgroundColor;
       this.mainCanvasCtx.fillRect(0, 0, width, height);
     }
