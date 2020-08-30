@@ -63,8 +63,8 @@ export class MazeRenderer {
     const width = nbColumns * cellSize + borderWidth;
     const height = nbRows * cellSize + borderWidth;
 
-    this.mainCanvasCtx = setupCanvas(this.mainCanvas, width, height);
-    this.mazeCanvasCtx = setupCanvas(this.mazeCanvas, width, height, false);
+    this.mainCanvasCtx = setupCanvas(this.mainCanvas, { width, height });
+    this.mazeCanvasCtx = setupCanvas(this.mazeCanvas, { width, height }, false);
 
     if (this.mainCanvasCtx) {
       this.mainCanvasCtx.fillStyle = this.backgroundColor;
