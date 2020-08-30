@@ -2,10 +2,6 @@
     display: flex;
     align-items: center;
     overflow: visible;
-    font-family: 'PT Mono';
-    font-family: 'Ubuntu Mono';
-    font-family: 'IBM Plex Mono';
-    font-family: 'Fira Code';
     line-height: 1.3;
 }
 

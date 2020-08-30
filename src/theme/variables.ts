@@ -4,5 +4,6 @@ export default {
     '--color-main-1-dark': '#770000',
     '--color-black': '#000000',
     '--color-white': '#FFFFFF',
+    '--font-family-main-1': 'IBMPlexMono-Regular',
   },
 };
