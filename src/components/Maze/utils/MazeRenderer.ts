@@ -1,3 +1,4 @@
+import { setupCanvas } from '../../../utils/canvas';
 import { loopWithDelay } from '../../../utils/loop';
 import {
   drawCell,
@@ -5,7 +6,6 @@ import {
   buildLabyrinthByStep,
   Maze,
 } from './mazeUtils';
-import { setupCanvas } from './canvas';
 
 enum Defaults {
   borderWidth = 1,
