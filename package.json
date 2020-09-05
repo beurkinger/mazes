@@ -1,6 +1,6 @@
 {
   "name": "mazes",
-  "version": "1.1.0",
+  "version": "1.0.0",
   "description": "Toying around with mazes generation.",
   "main": "index.html",
   "scripts": {
@@ -8,7 +8,8 @@
     "deploy": "gh-pages -d dist",
     "lint": "eslint . --ext .ts,.tsx",
     "start": "webpack-dev-server --mode development --open",
-    "type-check": "tsc --noEmit --watch"
+    "type-check": "tsc --noEmit --watch",
+    "update-config": "node ./scripts/update-config.js"
   },
   "repository": {
     "type": "git",
@@ -19,15 +20,14 @@
     "javascript",
     "typescript",
     "html5",
-    "css3",
-    "mazes"
+    "css3"
   ],
   "author": "Thibault Goehringer",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/beurkinger/mazes/issues"
   },
-  "homepage": "https://github.com/beurkinger/mazes#readme",
+  "homepage": "https://github.com/beurkinger/preact-starter-kit#readme",
   "dependencies": {
     "preact": "^10.4.4"
   },
