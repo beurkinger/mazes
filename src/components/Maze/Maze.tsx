@@ -5,7 +5,7 @@ import { loopWithDelay } from '../../utils/loop';
 import { MazeRenderer } from './utils/MazeRenderer';
 
 import style from './Maze.css';
-import useTimeout from '../hooks/useTimeout';
+import useTimeout from '../../hooks/useTimeout';
 
 interface Props {
   animationDelay?: number;
