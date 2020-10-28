@@ -1,7 +1,7 @@
 .loadBar {
   display: flex;
   border: 3px solid var(--color-white);
-  width: 153px;
+  width: 243px;
   padding: 4px 2px;
 }
 

@@ -15,24 +15,24 @@ const Mazes: FunctionComponent = () => {
       <div className={style.mazesContent}>
         <Maze
           backgroundColor={backgroundColor}
-          nbColumns={10}
+          nbColumns={16}
           nbRows={12}
           strokeColor={strokeColor}
         />
         <Maze
           backgroundColor={backgroundColor}
-          nbColumns={10}
+          nbColumns={16}
           nbRows={4}
           strokeColor={strokeColor}
         />
         <Maze
           backgroundColor={backgroundColor}
-          nbColumns={10}
+          nbColumns={16}
           nbRows={8}
           strokeColor={strokeColor}
         />
         <div className={style.separator} />
-        <Loader nbBars={12} />
+        <Loader nbBars={20} />
       </div>
     </div>
   );

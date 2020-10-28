@@ -24,9 +24,9 @@ interface Props {
 const Maze: FunctionComponent<Props> = ({
   animationDelay = 100,
   backgroundColor = '#FFFFFF',
-  blinkingDelay = 600,
+  blinkingDelay = 500,
   borderWidth = 3,
-  buildingDelay = 350,
+  buildingDelay = 300,
   cellWidth = 15,
   introDelay = 100,
   nbBlinks = 6,
