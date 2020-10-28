@@ -2,7 +2,7 @@
   display: flex;
   border: 3px solid #FFFFFF;
   border: 3px solid var(--color-white);
-  width: 123px;
+  width: 243px;
   padding: 4px 2px;
 }
 
@@ -55,18 +55,18 @@
 }
 
 ._12Nj5bAcJk-bqcSOJ3Jo32 > div {
-  margin: 25px 0;
+  margin: 30px 0;
 }
 
 ._3ztg5zNQQVhrfSiVjdnNVp {
   display: flex;
   justify-content: center;
-  width: 123px;
+  width: 243px;
 }
 
 ._3ztg5zNQQVhrfSiVjdnNVp::before {
   display:  block;
-  width: 43px;
+  width: 83px;
   height: 3px;
   content: '';
   background: white;
@@ -95,7 +95,7 @@
 ._2oExzUs-thVdgi5RFS4NHL {
   height: 100vh;
   width: 100vw;
-  padding: 3px;
+  padding: 2px;
   background: #770000;
   background: var(--color-main-1-dark);
   overflow-y: auto;
@@ -116,8 +116,8 @@
 
 
 @font-face {
-    font-family: "IBMPlexMono-Regular";
-    src: url(/mazes/assets/IBMPlexMono-Regular.woff) format("woff");
+    font-family: "RobotoMono-Regular";
+    src: url(/mazes/assets/RobotoMono-Regular.woff) format("woff");
     font-weight: 500;
   }
 
@@ -126,7 +126,7 @@
     --color-main-1-dark: #770000;;
     --color-black: #000000;
     --color-white: #FFFFFF;
-    --font-family-main-1: "IBMPlexMono-Regular", Arial, Helvetica, sans-serif;
+    --font-family-main-1: "RobotoMono-Regular", Arial, Helvetica, sans-serif;
 }
 
 * {
@@ -145,7 +145,7 @@ html {
 }
 
 body {
-  font-family: "IBMPlexMono-Regular", Arial, Helvetica, sans-serif;
+  font-family: "RobotoMono-Regular", Arial, Helvetica, sans-serif;
   font-family: var(--font-family-main-1);
   font-size: 1rem;
 }
