@@ -24,9 +24,9 @@ interface Props {
 const Maze: FunctionComponent<Props> = ({
   animationDelay = 100,
   backgroundColor = '#FFFFFF',
-  blinkingDelay = 500,
+  blinkingDelay = 600,
   borderWidth = 3,
-  buildingDelay = 100,
+  buildingDelay = 350,
   cellWidth = 15,
   introDelay = 100,
   nbBlinks = 6,
@@ -39,7 +39,7 @@ const Maze: FunctionComponent<Props> = ({
   const clearLoopRef = useRef<() => void>(() => null);
 
   const [canvasSize, setCanvasSize] = useState({ height: 0, width: 0 });
-  const [coords, setCoords] = useState({ x: 0, y: 0 });
+  // const [coords, setCoords] = useState({ x: 0, y: 0 });
   const [isMessageVisible, setIsMessageVisible] = useState(false);
 
   const generateSuccessMessage = (): string => {
@@ -52,8 +52,8 @@ const Maze: FunctionComponent<Props> = ({
   };
 
   const buildMaze = () => {
-    rendererRef.current?.buildMaze((isDone, coords) => {
-      setCoords(coords);
+    rendererRef.current?.buildMaze((isDone) => {
+      // setCoords(coords);
       if (isDone) {
         blink();
       }
@@ -123,7 +123,7 @@ const Maze: FunctionComponent<Props> = ({
           {generateSuccessMessage()}
         </div>
       )}
-      <div
+      {/* <div
         className={style.coords}
         style={{
           fontSize: `${cellWidth * 1.5}px`,
@@ -133,7 +133,7 @@ const Maze: FunctionComponent<Props> = ({
           ${(coords.x * 4).toString(16).padStart(2, '0')},  
           ${(coords.y * 4).toString(16).padStart(2, '0')} 
         ]`}
-      </div>
+      </div> */}
     </div>
   );
 };

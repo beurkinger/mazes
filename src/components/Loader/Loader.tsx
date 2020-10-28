@@ -13,8 +13,8 @@ interface Props {
 }
 
 const Loader: FunctionComponent<Props> = ({
-  blinkingDelay = 500,
-  loadingDelay = 1000,
+  blinkingDelay = 600,
+  loadingDelay = 1200,
   nbBars = 10,
   nbBlinks = 6,
 }: Props) => {

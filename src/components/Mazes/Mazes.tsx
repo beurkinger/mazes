@@ -13,23 +13,26 @@ const Mazes: FunctionComponent = () => {
   return (
     <div className={style.mazes}>
       <div className={style.mazesContent}>
-        <Loader />
-        <div className={style.separator} />
         <Maze
           backgroundColor={backgroundColor}
+          nbColumns={10}
           nbRows={12}
           strokeColor={strokeColor}
         />
         <Maze
           backgroundColor={backgroundColor}
+          nbColumns={10}
           nbRows={4}
           strokeColor={strokeColor}
         />
         <Maze
           backgroundColor={backgroundColor}
+          nbColumns={10}
           nbRows={8}
           strokeColor={strokeColor}
         />
+        <div className={style.separator} />
+        <Loader nbBars={12} />
       </div>
     </div>
   );

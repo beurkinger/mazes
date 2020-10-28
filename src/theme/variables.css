@@ -1,8 +1,8 @@
 
 
 @font-face {
-    font-family: "IBMPlexMono-Regular";
-    src: url("../assets/fonts/IBMPlexMono-Regular.woff") format("woff");
+    font-family: "RobotoMono-Regular";
+    src: url("../assets/fonts/RobotoMono-Regular.woff") format("woff");
     font-weight: 500;
   }
 
@@ -11,5 +11,5 @@
     --color-main-1-dark: #770000;;
     --color-black: #000000;
     --color-white: #FFFFFF;
-    --font-family-main-1: "IBMPlexMono-Regular", Arial, Helvetica, sans-serif;
+    --font-family-main-1: "RobotoMono-Regular", Arial, Helvetica, sans-serif;
 }
